@@ -10,7 +10,11 @@ int main(int argc, char** argv) {
 	Mat img = imread(argv[1], 1);
 	Mat res, blur, sketch;
 	Mat grad_x, grad_y, abs_grad_x, abs_grad_y, grad, skt1, skt2;
-	GaussianBlur(img, blur, Size(5, 5), 0, 0, 4);
+	Size2i blur_size(3, 3);
+	int scale = 3, ksize = 1, delta = 1;
+	// Gaussianblur the image to reduce noise
+	GaussianBlur(img, blur, blur_size, 0, 0, 4);
+	// convert to grayscale image
 	cvtColor(blur, res, COLOR_BGR2GRAY);
 
 	Mat mask = Mat::zeros(img.size(), CV_8UC1);
@@ -23,15 +27,15 @@ int main(int argc, char** argv) {
 		# ksize 笲衡跋办箇砞 1 (ゲ斗琌タ计)
 		# scale 罽ゑㄒ盽计箇砞 1 (ゲ斗琌タ计)*/
 
-	Sobel(res, grad_x, -1, 1, 0, 1, 3, 0, BORDER_DEFAULT);
-	Sobel(res, grad_y, -1, 0, 1, 1, 3, 0, BORDER_DEFAULT);
+	// calculate derivative in x and y direction (scale = 3, ksize = 1, delta = 0)
+	Sobel(res, grad_x, CV_64F, 1, 0, scale, ksize, delta, BORDER_DEFAULT);
+	Sobel(res, grad_y, CV_64F, 0, 1, scale, ksize, delta, BORDER_DEFAULT);
 	// converting back to CV_8U
-	convertScaleAbs(grad_x, abs_grad_x, 1, 0);
-	convertScaleAbs(grad_y, abs_grad_y, 1, 0);
-	addWeighted(abs_grad_x, 1.5, abs_grad_y, 1.5, 10, grad);
+	convertScaleAbs(grad_x, abs_grad_x);
+	convertScaleAbs(grad_y, abs_grad_y);
+	addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
 
-
-	Mat mask2 = Mat::ones(img.size(), CV_8UC1);
+	// reverse to white background image
 	addWeighted(grad, -1, mask, 0, 255, sketch);
 
 	while (true) {
