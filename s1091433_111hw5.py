@@ -7,7 +7,7 @@ def skin_detection(img):
   # 在設定範圍內的圖片 pixel 過濾出來做成 mask
   # (0, 20, 70), (50, 255, 255)
   HSV_mask = cv2.inRange(img_HSV, (0, 58, 70), (50, 173, 255))
-  # 對圖片作開運算處理掉花邊
+  # 對圖片作開運算處理掉毛邊
   HSV_mask = cv2.morphologyEx(HSV_mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
 
   # 在 YCbCr 色域中再做一遍
@@ -26,7 +26,6 @@ def skin_detection(img):
   # mask 要轉換成三通道才能跟彩色圖做 AND 運算
   result_mask = cv2.merge([result_mask, result_mask, result_mask])
   result_merge = cv2.bitwise_and(result_mask, img)
-
   result = cv2.bitwise_not(combine_mask)
 
   # 將結果調整成適當大小顯示出來(有需要的話)
@@ -43,7 +42,6 @@ def skin_detection(img):
   # 原圖與mask merge過後
   cv2.imshow("Result", merge_show)
   cv2.waitKey(0)
-  i+=1
   cv2.destroyAllWindows()
 
 img1 = cv2.imread("img1.jpg")
