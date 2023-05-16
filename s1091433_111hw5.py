@@ -20,19 +20,18 @@ def skin_detection(img):
   combine_mask = cv2.bitwise_and(YCrCb_mask, HSV_mask)
   combine_mask = cv2.medianBlur(combine_mask, 3)
   combine_mask = cv2.morphologyEx(combine_mask, cv2.MORPH_OPEN, np.ones((4, 4), np.uint8))
-
+  # 標示遮罩
+  red_mask = cv2.cvtColor(combine_mask, cv2.COLOR_GRAY2BGR)
+  red_mask = cv2.bitwise_not(red_mask)
+  red_mask[combine_mask != 0] = [0, 0, 255]
   # 最終 mask 跟原圖做疊合
-  result_mask = cv2.threshold(combine_mask, 127, 255, cv2.THRESH_BINARY)[1]
-  # mask 要轉換成三通道才能跟彩色圖做 AND 運算
-  result_mask = cv2.merge([result_mask, result_mask, result_mask])
-  result_merge = cv2.bitwise_and(result_mask, img)
-  result = cv2.bitwise_not(combine_mask)
+  result_merge = cv2.bitwise_and(red_mask, img)
 
   # 將結果調整成適當大小顯示出來(有需要的話)
   percent = 10
   resize_percent = percent / 100
   dim = (int(img.shape[1] * resize_percent), int(img.shape[0] * resize_percent))
-  result_show = cv2.resize(result, dim, cv2.INTER_NEAREST)
+  result_show = cv2.resize(combine_mask, dim, cv2.INTER_NEAREST)
   img_show = cv2.resize(img, dim, cv2.INTER_NEAREST)
   merge_show = cv2.resize(result_merge, dim, cv2.INTER_NEAREST)
   # mask
